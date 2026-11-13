@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages {
+
         stage('Build Docker Images') {
             steps {
                 bat 'docker compose build'
@@ -21,7 +22,8 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     bat '''
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                        powershell -NoProfile -Command "$env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin"
+                        if errorlevel 1 exit /b 1
 
                         docker tag three-tier-ci-cd-backend:latest %DOCKERHUB_USER%/three-tier-devops-backend:%BUILD_NUMBER%
                         docker tag three-tier-ci-cd-backend:latest %DOCKERHUB_USER%/three-tier-devops-backend:latest
@@ -30,10 +32,16 @@ pipeline {
                         docker tag three-tier-ci-cd-frontend:latest %DOCKERHUB_USER%/three-tier-devops-frontend:latest
 
                         docker push %DOCKERHUB_USER%/three-tier-devops-backend:%BUILD_NUMBER%
+                        if errorlevel 1 exit /b 1
+
                         docker push %DOCKERHUB_USER%/three-tier-devops-backend:latest
+                        if errorlevel 1 exit /b 1
 
                         docker push %DOCKERHUB_USER%/three-tier-devops-frontend:%BUILD_NUMBER%
+                        if errorlevel 1 exit /b 1
+
                         docker push %DOCKERHUB_USER%/three-tier-devops-frontend:latest
+                        if errorlevel 1 exit /b 1
                     '''
                 }
             }
