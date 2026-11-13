@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: devops-viewer
+  namespace: three-tier
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-viewer
+  namespace: three-tier
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-viewer-binding
+  namespace: three-tier
+subjects:
+  - kind: ServiceAccount
+    name: devops-viewer
+    namespace: three-tier
+roleRef:
+  kind: Role
+  name: pod-viewer
+  apiGroup: rbac.authorization.k8s.io
